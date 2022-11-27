@@ -101,6 +101,7 @@ button {
   -ms-border-radius: 5px;
   -o-border-radius: 5px;
   overflow: scroll;
+  overflow-x: hidden;
 }
 .chat__message {
   -ms-flex-item-align: end;

@@ -5,48 +5,50 @@ const chatTextField = document.querySelector('.chat__text-field')
 const chatInput = document.querySelector('.chat__input')
 const buttonGeolocation = document.querySelector('.geo')
 
+function pageLoad() {
+
+    function writeMessage(text, answer) {
+
+        chatTextField.innerHTML += `<p class="chat__message ${answer}">${text}</p>`
+    }
+
+    let websocket = new WebSocket(url);
+
+    websocket.onopen = (evt) => {
+        console.log('соединение открыто')
+    };
+    websocket.onclose = (evt) => {
+        console.log('соединение закрыто')
+    };
+    websocket.onerror = (evt) => {
+        writeMessage('ошибка соединения');
+    }
+    websocket.onmessage = (evt) => {
+        writeMessage(evt.data, 'answer')
+    };
 
 
-function writeMessage(text, answer, geo ) {
+    button.addEventListener('click', () => {
 
-    chatTextField.innerHTML += `<p class="chat__message ${answer}">${text}</p>`
+        if (chatInput.value.length > 0) {
+            websocket.send(chatInput.value)
+            writeMessage(chatInput.value)
+            chatInput.value = null
+        }
+    })
+
+    buttonGeolocation.addEventListener('click', () => {
+        if ("geolocation" in navigator) {
+            navigator.geolocation.getCurrentPosition((position) => {
+                const { coords } = position;
+                let geo = `<a target="_blank" class = "link" href="https://www.openstreetmap.org/#map=13/${coords.latitude}/${coords.longitude}">Геолокация</a>`
+                writeMessage(geo);
+                websocket.send(geo)
+                websocket.onmessage = null;
+
+            });
+        }
+    })
 }
 
-let websocket = new WebSocket(url);
-
-websocket.onopen = (evt) => {
-    console.log('соединение открыто')
-};
-websocket.onclose = (evt) => {
-    console.log('соединение закрыто')
-};
-websocket.onerror = (evt) => {
-    writeMessage('ошибка соединения');
-}
-
-
-
-button.addEventListener('click', () => {
-
-    if (chatInput.value.length > 0) {
-        websocket.send(chatInput.value)
-        writeMessage(chatInput.value)
-        chatInput.value = null
-        websocket.onmessage = (evt) => {
-            writeMessage(evt.data, 'answer')
-        };
-    }
-})
-
-buttonGeolocation.addEventListener('click', () => {
-    if ("geolocation" in navigator) {
-        navigator.geolocation.getCurrentPosition((position) => {
-            const { coords } = position;
-            let geo = `<a target="_blank" class = "link" href="https://www.openstreetmap.org/#map=13/${coords.latitude}/${coords.longitude}">Геолокация</a>`
-            writeMessage(geo);
-            websocket.send(geo)
-            websocket.onmessage = null;
-
-        });
-    }
-})
+document.addEventListener('DOMContentLoaded', pageLoad)
